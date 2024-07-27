@@ -1,12 +1,13 @@
-import {ApiCategoryType} from '../../types';
-import React, {useState} from 'react';
+import {ApiCategoryType, CategoryType} from '../../types';
+import React, {useEffect, useState} from 'react';
 import ButtonSpinner from '../Spinners/ButtonSpiner';
 
 interface CategoryProps {
-  onSubmit: (category: ApiCategoryType) => void;
-  existingCategory?: ApiCategoryType;
+  onSubmit: (category: CategoryType|ApiCategoryType) => Promise<void>;
+  existingCategory?: CategoryType;
   isLoading?: boolean;
 }
+
 const emptyState: ApiCategoryType = {
   type: '',
   name: '',
@@ -15,6 +16,12 @@ const emptyState: ApiCategoryType = {
 const AddCategoryForm: React.FC<CategoryProps> = ({onSubmit, existingCategory, isLoading}) => {
 
   const [category, setCategory] = useState<ApiCategoryType>(emptyState);
+
+  useEffect(() => {
+    if (existingCategory !== undefined) {
+      setCategory(existingCategory);
+    }
+  }, [existingCategory]);
 
   const changeCategory = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
     setCategory((prev) => ({
@@ -26,9 +33,7 @@ const AddCategoryForm: React.FC<CategoryProps> = ({onSubmit, existingCategory, i
   const onFormSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    onSubmit({
-      ...category,
-    });
+    onSubmit(category);
   };
 
   return (
