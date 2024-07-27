@@ -1,5 +1,5 @@
 import {createAsyncThunk} from '@reduxjs/toolkit';
-import {ApiTransactions, TransactionType} from '../../types';
+import {ApiTransactions, TransactionType, UpdateTransactionType} from '../../types';
 import {RootState} from '../../app/store';
 import axiosApi from '../../axiosApi';
 
@@ -27,4 +27,11 @@ export const deleteTransaction =  createAsyncThunk<void, string, { state: RootSt
   async (transactionID) => {
     await axiosApi.delete('/transactions/' + transactionID + '.json');
   },
+);
+
+export const updateTransaction = createAsyncThunk<void, UpdateTransactionType, { state: RootState }>(
+  'transactions/update',
+   async ({id, transaction}) => {
+    await axiosApi.put(`/transactions/${id}.json`, transaction);
+  }
 );
