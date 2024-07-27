@@ -12,7 +12,7 @@ const AddTransaction = () => {
 
   return (
     <div className="container">
-      <AddTransactionForm isLoading={false} />
+      <AddTransactionForm isLoading={false}/>
     </div>
   );
 };
