@@ -5,7 +5,7 @@ import {useEffect, useState} from 'react';
 import Modal from '../../components/Modal/Modal';
 import AddCategoryForm from '../../components/AddForm/AddCategoryForm';
 import {ApiCategoryType, CategoryType} from '../../types';
-import {createCategory, fetchCategories, updateCategory} from '../../features/category/categoryThunk';
+import {createCategory, deleteCategory, fetchCategories, updateCategory} from '../../features/category/categoryThunk';
 
 const Categories = () => {
   const categories = useAppSelector(selectCategories);
@@ -28,7 +28,13 @@ const Categories = () => {
       console.error('Could not update category!', error);
     }
   };
-  const deleteHandler = () => {
+  const deleteHandler = async (categoryId: string) => {
+    try {
+      await dispatch(deleteCategory(categoryId));
+      await dispatch(fetchCategories());
+    } catch (error) {
+      console.error('Could not delete category!', error);
+    }
   };
 
   const onSubmit = async (category: ApiCategoryType) => {
@@ -57,18 +63,18 @@ const Categories = () => {
       </div>
       <div className="mt-3">
         {categories.map((category) => (
-          <>
-            <CategoryCard
-              key={category.id}
-              category={category}
-              onEdit={() => {
-                setExistingCategory(category);
-                setShowEditModal(true);
-              }}
-              onDelete={deleteHandler}
-              deleteLoading={false}/>
 
-          </>
+          <CategoryCard
+            key={category.id}
+            category={category}
+            onEdit={() => {
+              setExistingCategory(category);
+              setShowEditModal(true);
+            }}
+            onDelete={() => deleteHandler(category.id)}
+            deleteLoading={false}/>
+
+
         ))}
       </div>
       <Modal show={showEditModal} onClose={() => setShowEditModal(false)}>
