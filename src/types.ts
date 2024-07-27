@@ -24,3 +24,8 @@ export interface TransactionType {
 export interface ApiTransactions {
   [id: string]: TransactionType;
 }
+
+export interface UpdateTransactionType {
+  id: string;
+  transaction: TransactionType;
+}
