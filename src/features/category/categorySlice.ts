@@ -1,17 +1,21 @@
 import {CategoryType} from '../../types';
 import {createSlice} from '@reduxjs/toolkit';
-import {createCategory, fetchCategories} from './categoryThunk';
+import {createCategory, deleteCategory, fetchCategories, updateCategory} from './categoryThunk';
 
 export interface CategoryState {
   categories: CategoryType[];
   createLoading: boolean;
   fetchLoading: boolean;
+  updateLoading: boolean;
+  deleteLoading: false | string;
 }
 
 const initialState: CategoryState = {
   categories: [],
   createLoading: false,
   fetchLoading: false,
+  updateLoading: false,
+  deleteLoading: false,
 };
 
 const categorySlice = createSlice({
@@ -40,10 +44,34 @@ const categorySlice = createSlice({
       .addCase(fetchCategories.rejected, (state) => {
         state.fetchLoading = false;
       });
+    builder
+      .addCase(updateCategory.pending, (state) => {
+        state.updateLoading = true;
+      })
+      .addCase(updateCategory.fulfilled, (state) => {
+        state.updateLoading = false;
+      })
+      .addCase(updateCategory.rejected, (state) => {
+        state.updateLoading = false;
+      });
+    builder
+      .addCase(deleteCategory.pending, (state, { meta: { arg: category } }) => {
+        state.deleteLoading = category;
+      })
+      .addCase(deleteCategory.fulfilled, (state) => {
+        state.deleteLoading = false;
+      })
+      .addCase(deleteCategory.rejected, (state) => {
+        state.deleteLoading = false;
+      });
+
   },
   selectors: {
     selectCategories: (state) => state.categories,
+    selectCreatCategoriesLoading: (state) => state.createLoading,
     selectFetchCategoriesLoading: (state) => state.fetchLoading,
+    selectUpdateCategoryLoading: (state) => state.updateLoading,
+    selectDeleteCategoryLoading: (state) => state.deleteLoading,
   }
 });
 
@@ -51,7 +79,10 @@ export const categoryReducer = categorySlice.reducer;
 
 export const {
   selectCategories,
-  selectFetchCategoriesLoading
+  selectCreatCategoriesLoading,
+  selectFetchCategoriesLoading,
+  selectUpdateCategoryLoading,
+  selectDeleteCategoryLoading
 } = categorySlice.selectors;
 
 
