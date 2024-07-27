@@ -2,7 +2,8 @@ import ButtonSpinner from '../../Spinners/ButtonSpiner';
 import React, {useEffect, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '../../../app/hooks';
 import {selectCategories} from '../../../features/category/categorySlice';
-import {createTransaction} from '../../../features/transaction/transactionThunk';
+import {createTransaction, fetchTransaction} from '../../../features/transaction/transactionThunk';
+import {useNavigate} from 'react-router-dom';
 
 interface Props {
   isLoading?: boolean;
@@ -12,6 +13,7 @@ interface Props {
 
 const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
   const dispatch = useAppDispatch();
+  const navigate = useNavigate();
 
   const categories = useAppSelector(selectCategories);
 
@@ -20,7 +22,7 @@ const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
   const [categoryId, setCategoryId] = useState<string>('');
 
   useEffect(() => {
-    const initialCategoryId = categories.filter((category) => category.type === categoryType)[0].id
+    const initialCategoryId = categories.filter((category) => category.type === categoryType)[0]?.id
     setCategoryId(initialCategoryId);
   }, [categoryType]);
 
@@ -45,6 +47,8 @@ const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
     };
     try {
       await dispatch(createTransaction(newTransaction));
+      await dispatch(fetchTransaction());
+      navigate('/');
     } catch (error) {
       console.error(error);
     }
@@ -102,7 +106,7 @@ const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
           value={amount}
         />
       </div>
-      <div className="mt-2 mb-3 text-end me-3">
+      <div className="mt-3 mb-3 me-3">
         <button
           type="submit"
           className="btn btn-primary"
