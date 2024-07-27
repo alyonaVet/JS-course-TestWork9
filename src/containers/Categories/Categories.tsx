@@ -4,21 +4,26 @@ import CategoryCard from '../../components/Card/CategoryCard';
 import {useEffect, useState} from 'react';
 import Modal from '../../components/Modal/Modal';
 import AddCategoryForm from '../../components/AddForm/AddCategoryForm';
-import {ApiCategoryType} from '../../types';
+import {ApiCategoryType, CategoryType} from '../../types';
 import {createCategory, fetchCategories, updateCategory} from '../../features/category/categoryThunk';
-import {useParams} from 'react-router-dom';
 
 const Categories = () => {
   const categories = useAppSelector(selectCategories);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
-  const { id } = useParams() as { id: string };
+  const [existingCategory, setExistingCategory] = useState<CategoryType | undefined>(undefined);
+
 
   const dispatch = useAppDispatch();
 
-  const onEditSubmit = async (category: ApiCategoryType) => {
+  const onEditSubmit = async (category: CategoryType) => {
+    const categoryId = category.id;
+    const categoryData = {type: category.type, name: category.name};
     try {
-      await dispatch(updateCategory({ id, category })).unwrap();
+      await dispatch(updateCategory({id: categoryId, category: categoryData})).unwrap();
+      await dispatch(fetchCategories());
+      setExistingCategory(undefined);
+      setShowEditModal(false);
     } catch (error) {
       console.error('Could not update category!', error);
     }
@@ -52,24 +57,31 @@ const Categories = () => {
       </div>
       <div className="mt-3">
         {categories.map((category) => (
-          <CategoryCard
-            key={category.id}
-            category={category}
-            onEdit={() => setShowEditModal(true)}
-            onDelete={deleteHandler}
-            deleteLoading={false}/>
+          <>
+            <CategoryCard
+              key={category.id}
+              category={category}
+              onEdit={() => {
+                setExistingCategory(category);
+                setShowEditModal(true);
+              }}
+              onDelete={deleteHandler}
+              deleteLoading={false}/>
+
+          </>
         ))}
       </div>
+      <Modal show={showEditModal} onClose={() => setShowEditModal(false)}>
+        <div className="ms-3">
+          <AddCategoryForm onSubmit={onEditSubmit} existingCategory={existingCategory}/>
+        </div>
+      </Modal>
       <Modal show={showAddModal} onClose={() => setShowAddModal(false)}>
         <div className="ms-3">
           <AddCategoryForm onSubmit={onSubmit}/>
         </div>
       </Modal>
-      <Modal show={showEditModal} onClose={() => setShowEditModal(false)}>
-        <div className="ms-3">
-          <AddCategoryForm onSubmit={onEditSubmit}/>
-        </div>
-      </Modal>
+
     </div>
   );
 };
