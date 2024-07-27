@@ -13,7 +13,6 @@ const Categories = () => {
   const [showEditModal, setShowEditModal] = useState(false);
   const [existingCategory, setExistingCategory] = useState<CategoryType | undefined>(undefined);
 
-
   const dispatch = useAppDispatch();
 
   const onEditSubmit = async (category: CategoryType) => {
@@ -87,7 +86,6 @@ const Categories = () => {
           <AddCategoryForm onSubmit={onSubmit}/>
         </div>
       </Modal>
-
     </div>
   );
 };
