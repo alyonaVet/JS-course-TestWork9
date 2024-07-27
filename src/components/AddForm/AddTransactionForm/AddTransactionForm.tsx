@@ -2,31 +2,53 @@ import ButtonSpinner from '../../Spinners/ButtonSpiner';
 import React, {useEffect, useState} from 'react';
 import {useAppDispatch, useAppSelector} from '../../../app/hooks';
 import {selectCategories} from '../../../features/category/categorySlice';
-import {createTransaction, fetchTransaction} from '../../../features/transaction/transactionThunk';
-import {useNavigate} from 'react-router-dom';
+import {createTransaction, fetchTransaction, updateTransaction} from '../../../features/transaction/transactionThunk';
+import {useNavigate, useParams} from 'react-router-dom';
+import {selectTransactions} from '../../../features/transaction/transactionSlice';
 
 interface Props {
   isLoading?: boolean;
 }
 
 
-
 const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
   const dispatch = useAppDispatch();
   const navigate = useNavigate();
+  const {transactionId} = useParams();
+
 
   const categories = useAppSelector(selectCategories);
+  const transactions = useAppSelector(selectTransactions);
+
 
   const [categoryType, setCategoryType] = useState<string>('expense');
 
   const [categoryId, setCategoryId] = useState<string>('');
 
+  const [amount, setAmount] = useState<string>('');
+
+  const [date, setDate] = useState<string>(new Date().toISOString());
+
+
   useEffect(() => {
-    const initialCategoryId = categories.filter((category) => category.type === categoryType)[0]?.id
+    const initialCategoryId = categories.filter((category) => category.type === categoryType)[0]?.id;
     setCategoryId(initialCategoryId);
   }, [categoryType]);
 
-  const [amount, setAmount] = useState<string>('');
+  useEffect(() => {
+    if (transactionId) {
+
+      const currentTransaction = transactions[transactionId];
+      const currentCategory = categories.find((category) => category.id === currentTransaction.category);
+
+      setCategoryId(currentTransaction.category);
+      setCategoryType(currentCategory.type);
+      setAmount(currentTransaction.amount.toString());
+      setDate(currentTransaction.createdAt);
+
+    }
+
+  }, [transactionId]);
 
 
   const changeCategoryType = (event: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
@@ -38,12 +60,12 @@ const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
   };
 
 
-  const onFormSubmit = async (event: React.FormEvent) => {
+  const onAddFormSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
     const newTransaction = {
       category: categoryId,
       amount: parseInt(amount) || 0,
-      createdAt: new Date().toISOString(),
+      createdAt: date,
     };
     try {
       await dispatch(createTransaction(newTransaction));
@@ -55,9 +77,30 @@ const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
 
   };
 
+
+  const onEditFormSubmit = async (event: React.FormEvent) => {
+    event.preventDefault();
+
+    const editTransaction = {
+      id: transactionId,
+      transaction: {
+        category: categoryId,
+        amount: parseInt(amount) || 0,
+        createdAt: date,
+      }};
+    try {
+      await dispatch(updateTransaction(editTransaction));
+      await dispatch(fetchTransaction());
+      navigate('/');
+    } catch (error) {
+      console.error(error);
+    }
+
+  };
+
   return (
-    <form onSubmit={onFormSubmit}>
-      <h4 className="mt-3">Add</h4>
+    <form onSubmit={transactionId ? onEditFormSubmit : onAddFormSubmit}>
+      <h4 className="mt-3">{transactionId ? 'Edit transaction' : 'Add transaction'}</h4>
       <div className="form-group">
         <label htmlFor="type">Type</label>
         <select
@@ -102,7 +145,7 @@ const AddTransactionForm: React.FC<Props> = ({isLoading}) => {
           id="amount"
           required
           className="form-control w-50 mb-3"
-          onChange={(event)=>setAmount(event.target.value)}
+          onChange={(event) => setAmount(event.target.value)}
           value={amount}
         />
       </div>
