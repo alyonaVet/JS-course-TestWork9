@@ -6,6 +6,7 @@ import AddTransaction from './containers/AddTransaction/AddTransaction';
 import {useEffect} from 'react';
 import {useAppDispatch} from './app/hooks';
 import {fetchCategories} from './features/category/categoryThunk';
+import EditTransaction from './containers/EditTransaction/EditTransaction';
 
 const App = () => {
   const dispatch = useAppDispatch();
@@ -24,6 +25,7 @@ const App = () => {
               <Route path="/" element={<MainPage />} />
               <Route path="/categories" element={<Categories />} />
               <Route path="/add-transaction" element={<AddTransaction />} />
+              <Route path="/edit-transaction/:transactionId" element={<EditTransaction />} />
             </Routes>
           </main>
         </>
